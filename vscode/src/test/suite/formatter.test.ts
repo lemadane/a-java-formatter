@@ -55,7 +55,7 @@ describe('Accenture Java Formatter Test Suite', () => {
             '}'
         ].join('\n');
 
-        const formatter = new JavaFormatter(ACCENTURE_DEFAULT_CONFIG);
+        const formatter = new JavaFormatter({ ...ACCENTURE_DEFAULT_CONFIG, tabSize: 2, continuationIndent: 4 });
         const formatted = formatter.formatDocument(messyCode);
 
         assert.ok(formatted.includes('public class EmployeeService {'));
@@ -85,7 +85,7 @@ describe('Accenture Java Formatter Test Suite', () => {
             '}'
         ].join('\n');
 
-        const formatter = new JavaFormatter(ACCENTURE_DEFAULT_CONFIG);
+        const formatter = new JavaFormatter({ ...ACCENTURE_DEFAULT_CONFIG, tabSize: 2, continuationIndent: 4 });
         const formatted = formatter.formatDocument(recordCode);
 
         assert.ok(formatted.includes('    String name,'));
@@ -119,11 +119,11 @@ describe('Accenture Java Formatter Test Suite', () => {
             '}'
         ].join('\n');
 
-        const formatter = new JavaFormatter(ACCENTURE_DEFAULT_CONFIG);
+        const formatter = new JavaFormatter({ ...ACCENTURE_DEFAULT_CONFIG, tabSize: 2, continuationIndent: 4 });
         const formatted = formatter.formatDocument(code);
 
         assert.ok(formatted.includes('        .map('));
-        assert.ok(formatted.includes('        ResponseEntity::ok)'));
+        assert.ok(formatted.includes('        .map(ResponseEntity::ok)'));
         assert.ok(formatted.includes('        .orElseGet('));
         assert.ok(formatted.includes('        () -> ResponseEntity.notFound()'));
         assert.ok(formatted.includes('            .build());'));
@@ -143,11 +143,11 @@ describe('Accenture Java Formatter Test Suite', () => {
             '}'
         ].join('\n');
 
-        const formatter = new JavaFormatter(ACCENTURE_DEFAULT_CONFIG);
+        const formatter = new JavaFormatter({ ...ACCENTURE_DEFAULT_CONFIG, tabSize: 2, continuationIndent: 4 });
         const formatted = formatter.formatDocument(messyCode);
 
         assert.ok(formatted.includes('    final var product = this.productService.create(request);'));
-        assert.ok(formatted.includes('    final var location =\n        URI.create("/api/products/" + product.id());'));
+        assert.ok(formatted.includes('    final var location =\n        URI.create(\n            "/api/products/" + product.id());'));
     });
 
     it('parseEclipseXmlConfig should extract indentation and line length settings', () => {
@@ -156,7 +156,7 @@ describe('Accenture Java Formatter Test Suite', () => {
 
         try {
             const config = parseEclipseXmlConfig(tempXmlPath);
-            assert.strictEqual(config.tabSize, 2);
+            assert.strictEqual(config.tabSize, 4);
             assert.strictEqual(config.insertSpaces, true);
             assert.strictEqual(config.maxLineLength, 120);
         } finally {

@@ -2,7 +2,7 @@
   "name": "accenture-java-formatter",
   "displayName": "Accenture Java Formatter",
   "description": "Enterprise-grade Java code formatting extension for Visual Studio Code, inspired by Language Support for Java(TM) by Red Hat.",
-  "version": "0.9.7",
+  "version": "0.9.9",
   "publisher": "LemuelAdane",
   "repository": {
     "type": "git",
@@ -95,7 +95,7 @@
         },
         "accentureJava.format.tabSize": {
           "type": "integer",
-          "default": 2,
+          "default": 4,
           "description": "Number of spaces per indentation level."
         },
         "accentureJava.format.insertSpaces": {
@@ -127,6 +127,12 @@
           "type": "boolean",
           "default": false,
           "description": "Automatically trigger Accenture Java Formatter when Java code changes in the editor."
+        },
+        "accentureJava.format.continuationIndent": {
+          "type": "integer",
+          "default": 2,
+          "minimum": 0,
+          "description": "Continuation indentation in spaces, independent of block indentation."
         }
       }
     }

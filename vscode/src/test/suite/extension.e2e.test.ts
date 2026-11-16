@@ -6,7 +6,10 @@ describe('Accenture Java Formatter E2E Test Suite (Rules 1-10)', () => {
     let testDoc: vscode.TextDocument;
     let testEditor: vscode.TextEditor;
 
+    // Retain explicit legacy settings for the existing rule-regression examples.
     beforeEach(async () => {
+        await vscode.workspace.getConfiguration('accentureJava.format').update('tabSize', 2);
+        await vscode.workspace.getConfiguration('accentureJava.format').update('continuationIndent', 4);
         testDoc = await vscode.workspace.openTextDocument({
             language: 'java',
             content: ''
@@ -16,6 +19,8 @@ describe('Accenture Java Formatter E2E Test Suite (Rules 1-10)', () => {
 
     afterEach(async () => {
         await vscode.commands.executeCommand('workbench.action.closeActiveEditor');
+        await vscode.workspace.getConfiguration('accentureJava.format').update('tabSize', undefined);
+        await vscode.workspace.getConfiguration('accentureJava.format').update('continuationIndent', undefined);
     });
 
     it('E2E Rule 1: Any annotation should sit on its own dedicated line', async () => {
@@ -241,7 +246,7 @@ describe('Accenture Java Formatter E2E Test Suite (Rules 1-10)', () => {
 
         assert.ok(text.includes('    final var product = this.productService.create(request);'), 'Single line assignment under 70 chars must stay on single line');
         assert.ok(
-            text.includes('    final var location =\n        URI.create("/api/products/" + product.id());'),
+            text.includes('    final var location =\n        URI.create(\n            "/api/products/" + product.id());'),
             'Missing spaces around = and excess paren spaces must be normalized, and long assignment must wrap at 70 columns'
         );
     });
@@ -336,6 +341,37 @@ describe('Accenture Java Formatter E2E Test Suite (Rules 1-10)', () => {
         assert.ok(text.includes('return ResponseEntity.ok()\n        .body("Success");'));
     });
 
+    it('E2E Nested Lambda Calls: Wrap each nested call and its argument on a deeper line', async () => {
+        const inputCode = [
+            'public class RowMapper {',
+            '  void mapRows() {',
+            '    resultSet.forEach((Row row) -> products.add(this.mapRow(row)));',
+            '  }',
+            '}'
+        ].join('\n');
+
+        await testEditor.edit(editBuilder => {
+            const fullRange = new vscode.Range(0, 0, testDoc.lineCount, 0);
+            editBuilder.replace(fullRange, inputCode);
+        });
+
+        await vscode.commands.executeCommand('accentureJava.format.document');
+
+        assert.strictEqual(
+            testDoc.getText(),
+            [
+                'public class RowMapper {',
+                '  void mapRows() {',
+                '    resultSet.forEach(',
+                '        (Row row) -> products.add(',
+                '            this.mapRow(row)));',
+                '  }',
+                '}'
+            ].join('\n'),
+            'Nested lambda calls should split one call level per line and indent each deeper call argument'
+        );
+    });
+
     it('E2E Rule 9: Statements reaching 70 column or more wrap assignment RHS or method arguments onto next line', async () => {
         const inputCode = [
             'package com.accenture.test;',
@@ -381,7 +417,7 @@ describe('Accenture Java Formatter E2E Test Suite (Rules 1-10)', () => {
         const text = testDoc.getText();
 
         assert.ok(text.includes('        .map('));
-        assert.ok(text.includes('        ResponseEntity::ok)'));
+        assert.ok(text.includes('        .map(ResponseEntity::ok)'));
         assert.ok(text.includes('        .orElseGet('));
         assert.ok(text.includes('        () -> ResponseEntity.notFound()'));
         assert.ok(text.includes('            .build());'));
@@ -412,9 +448,10 @@ describe('Accenture Java Formatter E2E Test Suite (Rules 1-10)', () => {
 
         assert.ok(
             text.includes(
-                '        .orElseGet(() -> ResponseEntity\n' +
-                '            .notFound()\n' +
-                '            .build());'
+                '        .orElseGet(\n' +
+                '            () -> ResponseEntity\n' +
+                '                .notFound()\n' +
+                '                .build());'
             ),
             'State 1: .notFound() and .build() must both be indented 2x (12 spaces) relative to .orElseGet(() -> ResponseEntity (8 spaces)'
         );
@@ -489,7 +526,7 @@ describe('Accenture Java Formatter E2E Test Suite (Rules 1-10)', () => {
         assert.ok(text.includes('\n        this.productService.create(request);\n'), 'Multiline assignment RHS on next line must have 2x continuation indentation (8 spaces total)');
 
         // 4. Single-line assignment under 70 chars retains level 2 (4 spaces)
-        assert.ok(text.includes('\n    final var location = URI.create("/api/products/" + product.id());\n'), 'Single line assignment under 70 chars stays on single line with 4 spaces');
+        assert.ok(text.includes('\n    final var location = URI.create(\n        "/api/products/" + product.id());\n'), 'A nested call argument is expanded even below the line limit');
     });
 
     it('E2E Assignment Bug 1: Missing space after equal sign must be normalized', async () => {

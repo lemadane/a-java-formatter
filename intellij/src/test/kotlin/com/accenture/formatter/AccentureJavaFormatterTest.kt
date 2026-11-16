@@ -6,11 +6,11 @@ import org.junit.Test
 
 class AccentureJavaFormatterTest {
 
-    private val config = AccentureFormatterConfig()
+    private val config = AccentureFormatterConfig(continuationIndent = 8)
 
     private fun assertFormatting(input: String, expected: String) {
         val formattedOnce = AccentureJavaFormatter.format(input, config)
-        assertEquals("First format pass failed", expected, formattedOnce)
+        assertEquals("First format pass failed\nActual:\n$formattedOnce", expected, formattedOnce)
         val formattedTwice = AccentureJavaFormatter.format(formattedOnce, config)
         assertEquals("Idempotency check failed (2x format)", formattedOnce, formattedTwice)
     }
@@ -83,9 +83,8 @@ class AccentureJavaFormatterTest {
             package com.accenture.test;
             public class Calculator {
                 public int add(
-                    int a,
-                    int b
-                ) {
+                        int a,
+                        int b) {
                     return a + b;
                 }
             }
@@ -128,8 +127,7 @@ class AccentureJavaFormatterTest {
         val expected = """
             public class Sample {
                 public void processVeryLongSingleParameterNameThatExceedsEightyColumnsWidthInHeader(
-                    String veryLongParameter
-                ) {
+                        String veryLongParameter) {
                     // body
                 }
             }
@@ -155,8 +153,7 @@ class AccentureJavaFormatterTest {
             public class ExceptionHandlerController {
                 @ExceptionHandler(MethodArgumentNotValidException.class)
                 public ResponseEntity<Map<String, Object>> handleMethodArgumentNotValidException(
-                    final MethodArgumentNotValidException exception
-                ) {
+                        final MethodArgumentNotValidException exception) {
                     return null;
                 }
             }
@@ -176,9 +173,9 @@ class AccentureJavaFormatterTest {
         val expected = """
             package com.accenture.test;
             public class CustomController
-                extends BaseController
-                implements ControllerInterface
-                throws Exception {
+                    extends BaseController
+                    implements ControllerInterface
+                    throws Exception {
             }
         """.trimIndent()
 
@@ -202,13 +199,11 @@ class AccentureJavaFormatterTest {
             public class PaymentController {
                 private PaymentService service;
                 public void execute(
-                    String id,
-                    Double amount
-                ) {
+                        String id,
+                        Double amount) {
                     service.pay(
-                        id,
-                        amount
-                    );
+                            id,
+                            amount);
                 }
             }
         """.trimIndent()
@@ -267,9 +262,31 @@ class AccentureJavaFormatterTest {
             package com.accenture.test;
             public class ResponseHandler {
                 public ResponseEntity<String> getResponse() {
-                    return ResponseEntity
-                        .ok()
-                        .body("Success");
+                    return ResponseEntity.ok()
+                            .body("Success");
+                }
+            }
+        """.trimIndent()
+
+        assertFormatting(input, expected)
+    }
+
+    @Test
+    fun testNestedLambdaCallsWrapEveryCallAndArgumentAtDeeperIndentation() {
+        val input = """
+            public class RowMapper {
+                void mapRows() {
+                    resultSet.forEach((Row row) -> products.add(this.mapRow(row)));
+                }
+            }
+        """.trimIndent()
+
+        val expected = """
+            public class RowMapper {
+                void mapRows() {
+                    resultSet.forEach(
+                            (Row row) -> products.add(
+                                    this.mapRow(row)));
                 }
             }
         """.trimIndent()
@@ -310,10 +327,9 @@ class AccentureJavaFormatterTest {
             package com.accenture.test;
             public class User {
                 @Table(
-                    name = "users",
-                    schema = "public_database_schema_identifier",
-                    indexes = {@Index(name = "idx")}
-                )
+                        name = "users",
+                        schema = "public_database_schema_identifier",
+                        indexes = {@Index(name = "idx")})
                 private String name;
             }
         """.trimIndent()
@@ -331,10 +347,11 @@ class AccentureJavaFormatterTest {
 
         val expected = """
             @Table(
-                name = "users",
-                indexes = {@Index(name = "idx_user_email", columnList = "email")},
-                schema = "public"
-            )
+                    name = "users",
+                    indexes = {@Index(
+                            name = "idx_user_email",
+                            columnList = "email")},
+                    schema = "public")
             public class User {
             }
         """.trimIndent()
@@ -350,7 +367,14 @@ class AccentureJavaFormatterTest {
             public record ProductController() {}
         """.trimIndent()
 
-        assertFormatting(input, input)
+        val expected = """
+            package com.accenture.controller;
+            @RequestMapping(
+                    "/api/products/api/products/api/products/api/products/api/products/api/products")
+            public record ProductController() {}
+        """.trimIndent()
+
+        assertFormatting(input, expected)
     }
 
     // =========================================================================
@@ -394,8 +418,8 @@ class AccentureJavaFormatterTest {
             public class Test {
                 public String check(boolean conditionWithValue) {
                     return conditionWithValue
-                        ? "This is a very long text returned when true"
-                        : "This is another very long text returned when false";
+                            ? "This is a very long text returned when true"
+                            : "This is another very long text returned when false";
                 }
             }
         """.trimIndent()
@@ -415,7 +439,7 @@ class AccentureJavaFormatterTest {
         """.trimIndent()
 
         val formatted = AccentureJavaFormatter.format(input, config)
-        assertTrue("Ternary statement for name must format into 3 lines", formatted.contains("final String name = request.name() != null\n            ? request.name()\n            : existingProduct.name();"))
+        assertTrue("Ternary statement for name must format into 3 lines", formatted.contains("final String name = request.name() != null\n                ? request.name()\n                : existingProduct.name();"))
     }
 
     @Test
@@ -433,7 +457,7 @@ class AccentureJavaFormatterTest {
         """.trimIndent()
 
         val formatted = AccentureJavaFormatter.format(input, config)
-        assertTrue("Broken multiline ternary must be re-joined and formatted cleanly", formatted.contains("final String name = request.name() != null\n            ? request.name()\n            : existingProduct.name();"))
+        assertTrue("Broken multiline ternary must be re-joined and formatted cleanly", formatted.contains("final String name = request.name() != null\n                ? request.name()\n                : existingProduct.name();"))
     }
 
     // =========================================================================
@@ -500,7 +524,7 @@ class AccentureJavaFormatterTest {
         """.trimIndent()
 
         val formatted = AccentureJavaFormatter.format(input, config)
-        assertTrue("Equal sign and RHS starting on next line must be 2x indented", formatted.contains("final var product\n            = productService.create("))
+        assertTrue("Equal sign and RHS starting on next line must be 2x indented", formatted.contains("final var product\n                = productService.create("))
     }
 
     @Test
@@ -538,7 +562,9 @@ class AccentureJavaFormatterTest {
             public class ProductController {
                 public Object create() {
                     final var product = this.productService.create(request);
-                    final var location = URI.create("/api/products/" + product.id());
+                    final var location =
+                            URI.create(
+                                    "/api/products/" + product.id());
                     return ResponseEntity.ok(location);
                 }
             }
@@ -589,7 +615,7 @@ class AccentureJavaFormatterTest {
 
         val formatted = AccentureJavaFormatter.format(input, config)
         assertTrue(".map( must be indented", formatted.contains("            .map("))
-        assertTrue("ResponseEntity::ok) must be indented", formatted.contains("            ResponseEntity::ok)"))
+        assertTrue("Simple chain arguments stay compact", formatted.contains("                .map(ResponseEntity::ok)"))
         assertTrue(".orElseGet( must be indented", formatted.contains("            .orElseGet("))
         assertTrue("() -> ResponseEntity.notFound() must be indented", formatted.contains("            () -> ResponseEntity.notFound()"))
         assertTrue(".build() must be 2x indented", formatted.contains("                .build());"))
@@ -618,14 +644,14 @@ class AccentureJavaFormatterTest {
             public class ProductController {
                 @GetMapping("/{id}")
                 public ResponseEntity<ProductResponse> getById(
-                    @PathVariable
-                    final UUID id
-                ) {
+                        @PathVariable
+                        final UUID id) {
                     return this.productService.getById(id)
-                        .map(ResponseEntity::ok)
-                        .orElseGet(() -> ResponseEntity
-                            .notFound()
-                            .build());
+                            .map(ResponseEntity::ok)
+                            .orElseGet(
+                                    () -> ResponseEntity
+                                            .notFound()
+                                            .build());
                 }
             }
         """.trimIndent()
@@ -657,15 +683,14 @@ class AccentureJavaFormatterTest {
             public class ProductController {
                 @GetMapping("/{id}")
                 public ResponseEntity<ProductResponse> getById(
-                    @PathVariable
-                    final UUID id
-                ) {
+                        @PathVariable
+                        final UUID id) {
                     return this.productService.getById(id)
-                        .map(ResponseEntity::ok)
-                        .orElseGet(
-                            () -> ResponseEntity
-                                .notFound()
-                                .build());
+                            .map(ResponseEntity::ok)
+                            .orElseGet(
+                                    () -> ResponseEntity
+                                            .notFound()
+                                            .build());
                 }
             }
         """.trimIndent()
@@ -692,7 +717,19 @@ class AccentureJavaFormatterTest {
             }
         """.trimIndent()
 
-        assertFormatting(input, input)
+        val expected = """
+            package com.accenture.test;
+            public class SqlQueryTest {
+                public void executeQuery() {
+                    String sql = "select * from table a where size = 10 limit 5";
+                    jdbcTemplate.query(
+                            "select * from table a where size = 10 limit 5",
+                            rowMapper);
+                }
+            }
+        """.trimIndent()
+
+        assertFormatting(input, expected)
     }
 
     @Test
@@ -708,7 +745,17 @@ class AccentureJavaFormatterTest {
             }
         """.trimIndent()
 
-        assertFormatting(input, input)
+        val expected = """
+            package com.accenture.test;
+            public class PrintlnTest {
+                public void printLog(UUID id) {
+                    System.out.println(
+                            "Hello! This is before formatting = with formatted id: " + id);
+                }
+            }
+        """.trimIndent()
+
+        assertFormatting(input, expected)
     }
 
     @Test
@@ -741,7 +788,17 @@ class AccentureJavaFormatterTest {
             }
         """.trimIndent()
 
-        assertFormatting(input, input)
+        val expected = """
+            public class StringTest {
+                public void printCode() {
+                    String code =
+                            "if (a == b) { return a ? b : c; } extends BaseClass";
+                    System.out.println(code);
+                }
+            }
+        """.trimIndent()
+
+        assertFormatting(input, expected)
     }
 
     // =========================================================================
@@ -801,11 +858,11 @@ class AccentureJavaFormatterTest {
             import java.math.BigDecimal;
 
             public record UpdateProductRequest(
-                String name,
-                String description,
-                String category,
-                BigDecimal price,
-                long version) {
+                    String name,
+                    String description,
+                    String category,
+                    BigDecimal price,
+                    long version) {
 
                 public long nextVersion() {
                     return version + 2;

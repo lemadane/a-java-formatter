@@ -63,7 +63,8 @@ Module.prototype.require = function (request: string) {
                     },
                     update: async (key: string, value: any) => {
                         const fullKey = section ? `${section}.${key}` : key;
-                        configStore.set(fullKey, value);
+                        if (value === undefined) configStore.delete(fullKey);
+                        else configStore.set(fullKey, value);
                     }
                 }),
                 getWorkspaceFolder: () => undefined,
@@ -101,7 +102,7 @@ Module.prototype.require = function (request: string) {
             commands: {
                 executeCommand: async (cmd: string) => {
                     const { JavaFormatter } = require('../formatter/javaFormatter');
-                    const { ACCENTURE_DEFAULT_CONFIG } = require('../formatter/config');
+                    const { getFormatterConfig } = require('../formatter/config');
                     const { organizeJavaImports } = require('../formatter/organizeImports');
 
                     if (cmd === 'accentureJava.format.setAsDefault') {
@@ -112,7 +113,7 @@ Module.prototype.require = function (request: string) {
                     if (!activeEditor) return;
 
                     if (cmd === 'accentureJava.format.document') {
-                        const formatter = new JavaFormatter(ACCENTURE_DEFAULT_CONFIG);
+                        const formatter = new JavaFormatter(getFormatterConfig());
                         activeEditor.document._text = formatter.formatDocument(activeEditor.document.getText());
                     } else if (cmd === 'accentureJava.format.organizeImports') {
                         const lines = activeEditor.document.getText().split('\n');
@@ -123,7 +124,7 @@ Module.prototype.require = function (request: string) {
                             activeEditor.document._text = [before, res.importsText, after].filter(s => s).join('\n');
                         }
                     } else if (cmd === 'accentureJava.format.selection') {
-                        const formatter = new JavaFormatter(ACCENTURE_DEFAULT_CONFIG);
+                        const formatter = new JavaFormatter(getFormatterConfig());
                         activeEditor.document._text = formatter.formatRange(
                             activeEditor.document.getText(),
                             activeEditor.selection.start.line,

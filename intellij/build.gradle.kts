@@ -5,7 +5,7 @@ plugins {
 }
 
 group = "com.accenture"
-version = "0.9.7"
+version = "0.9.9"
 
 repositories {
     mavenCentral()
@@ -45,10 +45,17 @@ intellijPlatform {
 }
 
 tasks {
-    val copyPluginZipToRoot by registering(Copy::class) {
-        from(layout.buildDirectory.dir("distributions"))
-        include("accenture-java-formatter-intellij-${project.version}.zip")
-        into(layout.projectDirectory)
+    val copyPluginZipToRoot by registering {
+        val archiveName = "accenture-java-formatter-intellij-${project.version}.zip"
+        val archive = layout.buildDirectory.file("distributions/$archiveName")
+        val destination = layout.projectDirectory.file(archiveName)
+        dependsOn("buildPlugin")
+        inputs.file(archive)
+        // Declare only the ZIP as output, not the entire source/test directory.
+        outputs.file(destination)
+        doLast {
+            archive.get().asFile.copyTo(destination.asFile, overwrite = true)
+        }
     }
 
     named("buildPlugin") {

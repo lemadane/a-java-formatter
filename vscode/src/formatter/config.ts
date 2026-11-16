@@ -4,6 +4,8 @@ import * as path from 'path';
 
 export interface FormatterConfig {
     tabSize: number;
+    /** Continuation width in columns, independent of block indentation. */
+    continuationIndent?: number;
     insertSpaces: boolean;
     maxLineLength: number;
     preset: 'Accenture Standard' | 'Google Java Style' | 'Eclipse Default' | 'Spring Framework Style';
@@ -20,7 +22,8 @@ export interface FormatterConfig {
 }
 
 export const ACCENTURE_DEFAULT_CONFIG: FormatterConfig = {
-    tabSize: 2,
+    tabSize: 4,
+    continuationIndent: 2,
     insertSpaces: true,
     maxLineLength: 70,
     preset: 'Accenture Standard',
@@ -36,7 +39,7 @@ export const ACCENTURE_DEFAULT_CONFIG: FormatterConfig = {
 
 export const PRESET_CONFIGS: Record<string, Partial<FormatterConfig>> = {
     'Accenture Standard': {
-        tabSize: 2,
+        tabSize: 4,
         insertSpaces: true,
         maxLineLength: 70,
         braceStyle: 'sameLine',
@@ -83,7 +86,8 @@ export function getFormatterConfig(document?: vscode.TextDocument): FormatterCon
     const basePreset = PRESET_CONFIGS[preset] || PRESET_CONFIGS['Accenture Standard'];
 
     const config: FormatterConfig = {
-        tabSize: vscodeConfig ? vscodeConfig.get('tabSize', basePreset.tabSize ?? 2) : (basePreset.tabSize ?? 2),
+        tabSize: vscodeConfig ? vscodeConfig.get('tabSize', basePreset.tabSize ?? 4) : (basePreset.tabSize ?? 4),
+        continuationIndent: vscodeConfig ? vscodeConfig.get('continuationIndent', 2) : 2,
         insertSpaces: vscodeConfig ? vscodeConfig.get('insertSpaces', basePreset.insertSpaces ?? true) : (basePreset.insertSpaces ?? true),
         maxLineLength: vscodeConfig ? vscodeConfig.get('maxLineLength', basePreset.maxLineLength ?? 70) : (basePreset.maxLineLength ?? 70),
         preset: preset as FormatterConfig['preset'],
@@ -158,7 +162,7 @@ export function generateAccentureXmlConfig(): string {
 <profiles version="12">
     <profile kind="CodeFormatterProfile" name="Accenture Standard Java Profile" version="12">
         <setting id="org.eclipse.jdt.core.formatter.tabulation.char" value="space"/>
-        <setting id="org.eclipse.jdt.core.formatter.tabulation.size" value="2"/>
+        <setting id="org.eclipse.jdt.core.formatter.tabulation.size" value="4"/>
         <setting id="org.eclipse.jdt.core.formatter.lineSplit" value="120"/>
         <setting id="org.eclipse.jdt.core.formatter.brace_position_for_type_declaration" value="end_of_line"/>
         <setting id="org.eclipse.jdt.core.formatter.brace_position_for_method_declaration" value="end_of_line"/>
