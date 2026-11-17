@@ -528,7 +528,7 @@ class AccentureJavaFormatterTest {
     }
 
     @Test
-    fun testAssignmentEqualsAtEndOfLine1Preserved() {
+    fun testAssignmentCallHeaderRejoinedWhenItFits() {
         val input = """
             package com.accenture.test;
             public class TestClass {
@@ -541,7 +541,7 @@ class AccentureJavaFormatterTest {
         """.trimIndent()
 
         val formatted = AccentureJavaFormatter.format(input, config)
-        assertTrue("Equal sign on line 1 with RHS on line 2 must be preserved with 2x indentation", formatted.contains("final var product =\n                productService.create("))
+        assertTrue("Call header must join the assignment when it fits", formatted.contains("final var product = productService.create("))
     }
 
     @Test
@@ -562,9 +562,8 @@ class AccentureJavaFormatterTest {
             public class ProductController {
                 public Object create() {
                     final var product = this.productService.create(request);
-                    final var location =
-                            URI.create(
-                                    "/api/products/" + product.id());
+                    final var location = URI.create(
+                            "/api/products/" + product.id());
                     return ResponseEntity.ok(location);
                 }
             }

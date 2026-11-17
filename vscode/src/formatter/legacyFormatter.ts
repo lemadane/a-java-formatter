@@ -236,6 +236,23 @@ export class LegacyJavaFormatter {
 
             let line = lines[i].trim();
 
+            // Lay out assignment call headers using their final indentation.
+            const callHeader = /^(?:new\s+)?[\w$.]+(?:<[^;{}]*>)?\s*\($/;
+            if (line.endsWith(' =') && i + 1 < lines.length) {
+                const call = lines[i + 1].trim().replace(/^ASSIGN_RHS:/, '').trim();
+                if (callHeader.test(call)) {
+                    line = `${line} ${call}`;
+                    i++;
+                }
+            }
+            const assignment = this.findAssignmentOperatorIndex(line);
+            const columns = blockColumns + (parenColumnsStack.at(-1) ?? 0);
+            if (assignment >= 0 && callHeader.test(line.slice(assignment + 3).trim()) &&
+                columns + line.length > this.config.maxLineLength) {
+                outputLines.push(indentation(columns) + line.slice(0, assignment).trimEnd());
+                line = line.slice(assignment + 1);
+            }
+
             if (line === '') {
                 outputLines.push('');
                 continue;

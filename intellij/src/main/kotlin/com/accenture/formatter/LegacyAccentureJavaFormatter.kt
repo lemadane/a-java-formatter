@@ -380,7 +380,9 @@ class LegacyAccentureJavaFormatter(val config: AccentureFormatterConfig = Accent
         var inBlockComment = false
         var inTextBlock = false
 
+        var consumedLine = -1
         for (i in lines.indices) {
+            if (i == consumedLine) continue
             if (inTextBlock) {
                 outputLines.add(lines[i])
                 if (lines[i].contains("\"\"\"")) inTextBlock = false
@@ -388,6 +390,23 @@ class LegacyAccentureJavaFormatter(val config: AccentureFormatterConfig = Accent
             }
 
             var line = lines[i].trim()
+
+            // Lay out assignment call headers using their final indentation.
+            val callHeader = Regex("""^(?:new\s+)?[\w$.]+(?:<[^;{}]*>)?\s*\($""")
+            if (line.endsWith(" =") && i + 1 < lines.size) {
+                val call = lines[i + 1].trim().removePrefix("ASSIGN_RHS:").trim()
+                if (callHeader.matches(call)) {
+                    line = "$line $call"
+                    consumedLine = i + 1
+                }
+            }
+            val assignment = findAssignmentOperatorIndex(line)
+            val columns = blockColumns + (parenColumnsStack.lastOrNull() ?: 0)
+            if (assignment >= 0 && callHeader.matches(line.substring(assignment + 3).trim()) &&
+                columns + line.length > config.maxLineLength) {
+                outputLines.add(indentation(columns) + line.substring(0, assignment).trimEnd())
+                line = line.substring(assignment + 1)
+            }
 
             if (line.isEmpty()) {
                 outputLines.add("")

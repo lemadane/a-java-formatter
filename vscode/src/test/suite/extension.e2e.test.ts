@@ -21,6 +21,7 @@ describe('Accenture Java Formatter E2E Test Suite (Rules 1-10)', () => {
         await vscode.commands.executeCommand('workbench.action.closeActiveEditor');
         await vscode.workspace.getConfiguration('accentureJava.format').update('tabSize', undefined);
         await vscode.workspace.getConfiguration('accentureJava.format').update('continuationIndent', undefined);
+        await vscode.workspace.getConfiguration('accentureJava.format').update('maxLineLength', undefined);
     });
 
     it('E2E Rule 1: Any annotation should sit on its own dedicated line', async () => {
@@ -171,6 +172,72 @@ describe('Accenture Java Formatter E2E Test Suite (Rules 1-10)', () => {
         );
     });
 
+    for (const headerWidth of [69, 70, 71]) {
+        it(`E2E assignment call: ${headerWidth}-column header includes indentation`, async () => {
+            const settings = vscode.workspace.getConfiguration('accentureJava.format');
+            await settings.update('tabSize', 4);
+            await settings.update('continuationIndent', 2);
+            await settings.update('maxLineLength', 70);
+
+            const name = 'startedAt' + 'x'.repeat(headerWidth - '        final var startedAt = earliest('.length);
+            const header = `        final var ${name} = earliest(`;
+            assert.strictEqual(header.length, headerWidth);
+            const input = [
+                'class Sample {',
+                'void run() {',
+                `final var ${name} = earliest(installedAt, readInstant(KEY_STARTED_AT));`,
+                '}',
+                '}'
+            ].join('\n');
+            const expected = [
+                'class Sample {',
+                '    void run() {',
+                ...(headerWidth <= 70 ? [header] : [`        final var ${name}`, '          = earliest(']),
+                `${' '.repeat(headerWidth <= 70 ? 10 : 12)}installedAt,`,
+                `${' '.repeat(headerWidth <= 70 ? 10 : 12)}readInstant(KEY_STARTED_AT));`,
+                '    }',
+                '}'
+            ].join('\n');
+
+            await testEditor.edit(edit => edit.replace(new vscode.Range(0, 0, testDoc.lineCount, 0), input));
+            await vscode.commands.executeCommand('accentureJava.format.document');
+            assert.strictEqual(testDoc.getText(), expected);
+            await vscode.commands.executeCommand('accentureJava.format.document');
+            assert.strictEqual(testDoc.getText(), expected, 'A second format must preserve the layout');
+        });
+    }
+
+    it('E2E assignment call: rejoins an existing break after equals', async () => {
+        const settings = vscode.workspace.getConfiguration('accentureJava.format');
+        await settings.update('tabSize', 4);
+        await settings.update('continuationIndent', 2);
+        await settings.update('maxLineLength', 70);
+        const input = [
+            'class Sample {',
+            'void run() {',
+            'final var startedAt =',
+            '  earliest(',
+            '    installedAt,',
+            '    readInstant(KEY_STARTED_AT));',
+            '}',
+            '}'
+        ].join('\n');
+        const expected = [
+            'class Sample {',
+            '    void run() {',
+            '        final var startedAt = earliest(',
+            '          installedAt,',
+            '          readInstant(KEY_STARTED_AT));',
+            '    }',
+            '}'
+        ].join('\n');
+        await testEditor.edit(edit => edit.replace(new vscode.Range(0, 0, testDoc.lineCount, 0), input));
+        await vscode.commands.executeCommand('accentureJava.format.document');
+        assert.strictEqual(testDoc.getText(), expected);
+        await vscode.commands.executeCommand('accentureJava.format.document');
+        assert.strictEqual(testDoc.getText(), expected, 'A second format must preserve the layout');
+    });
+
     it('E2E Rule 7: Assignment statement RHS is indented 2x when on next line, but not forced onto next line if under 70 chars', async () => {
         // Case A: Multiline assignment split by user (as in screenshot) must be 2x indented
         const multilineInput = [
@@ -201,7 +268,7 @@ describe('Accenture Java Formatter E2E Test Suite (Rules 1-10)', () => {
         const text = testDoc.getText();
 
         assert.ok(text.includes('    final var product =\n        this.productService.create(request);'), 'RHS on next line must be 2x indented (8 spaces)');
-        assert.ok(text.includes('    final var location =\n        URI.create('), 'RHS URI.create on next line must be 2x indented');
+        assert.ok(text.includes('    final var location = URI.create('), 'URI.create header must join the assignment when it fits');
 
         // Case B: Single line assignment under 70 chars must NOT be forced onto next line
         const singleLineInput = [
@@ -246,7 +313,7 @@ describe('Accenture Java Formatter E2E Test Suite (Rules 1-10)', () => {
 
         assert.ok(text.includes('    final var product = this.productService.create(request);'), 'Single line assignment under 70 chars must stay on single line');
         assert.ok(
-            text.includes('    final var location =\n        URI.create(\n            "/api/products/" + product.id());'),
+            text.includes('    final var location = URI.create(\n        "/api/products/" + product.id());'),
             'Missing spaces around = and excess paren spaces must be normalized, and long assignment must wrap at 70 columns'
         );
     });
@@ -594,7 +661,7 @@ describe('Accenture Java Formatter E2E Test Suite (Rules 1-10)', () => {
         assert.ok(text.includes('    final var product\n        = productService.create('), 'Equal sign and RHS starting on next line must be 2x indented (8 spaces total)');
     });
 
-    it('E2E Assignment Bug 4: Equal sign at end of line 1 with RHS on line 2 must be preserved with 2x indentation', async () => {
+    it('E2E Assignment Bug 4: Wrapped call header rejoins assignment when it fits', async () => {
         const inputCode = [
             'package com.accenture.test;',
             'public class TestClass {',
@@ -614,7 +681,7 @@ describe('Accenture Java Formatter E2E Test Suite (Rules 1-10)', () => {
         await vscode.commands.executeCommand('accentureJava.format.document');
         const text = testDoc.getText();
 
-        assert.ok(text.includes('    final var product =\n        productService.create(\n            request);'), 'Equal sign on line 1 with RHS on line 2 must be preserved with 2x indentation');
+        assert.ok(text.includes('    final var product = productService.create(\n        request);'), 'Call header must join the assignment when it fits');
     });
 
     it('E2E SQL String Bug: SQL queries containing equal sign must not be treated as Java assignment statements', async () => {

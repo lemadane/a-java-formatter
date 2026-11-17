@@ -2,7 +2,7 @@
   "name": "accenture-java-formatter",
   "displayName": "Accenture Java Formatter",
   "description": "Enterprise-grade Java code formatting extension for Visual Studio Code, inspired by Language Support for Java(TM) by Red Hat.",
-  "version": "0.9.9",
+  "version": "0.9.10",
   "publisher": "LemuelAdane",
   "repository": {
     "type": "git",

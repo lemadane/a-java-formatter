@@ -1,8 +1,7 @@
 class Sample {
     void run() {
-        Object value =
-          service.create(
-            first,
-            second);
+        Object value = service.create(
+          first,
+          second);
     }
 }
