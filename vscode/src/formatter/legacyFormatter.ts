@@ -78,56 +78,31 @@ export class LegacyJavaFormatter {
      */
     private applyRule5Clauses(lines: string[]): string[] {
         const output: string[] = [];
-        let inTextBlock = false;
+        let angleDepth = 0;
 
         for (const line of lines) {
-            if (inTextBlock) {
-                output.push(line);
-                if (line.includes('"""')) inTextBlock = false;
-                continue;
-            }
-            if (line.includes('"""')) {
-                const count = (line.match(/"""/g) || []).length;
-                if (count % 2 !== 0) inTextBlock = true;
-            }
-
-            const trimmed = line.trim();
-            if (trimmed.startsWith('//') || trimmed.startsWith('/*') || trimmed.startsWith('*')) {
-                output.push(line);
-                continue;
-            }
-
-            const codeWithoutStrings = trimmed.replace(/"([^"\\]|\\.)*"/g, '""').replace(/'([^'\\]|\\.)*'/g, "''");
-            const hasExtends = /\bextends\b/.test(codeWithoutStrings) && !codeWithoutStrings.startsWith('extends');
-            const hasImplements = /\bimplements\b/.test(codeWithoutStrings) && !codeWithoutStrings.startsWith('implements');
-            const hasThrows = /\bthrows\b/.test(codeWithoutStrings) && !codeWithoutStrings.startsWith('throws');
-
-            if (!hasExtends && !hasImplements && !hasThrows) {
-                output.push(line);
-                continue;
-            }
-
-            const clauseRegex = /\b(extends|implements|throws)\b/g;
-            let lastIndex = 0;
-            let match: RegExpExecArray | null;
-            const parts: string[] = [];
-
-            while ((match = clauseRegex.exec(trimmed)) !== null) {
-                const partBefore = trimmed.slice(lastIndex, match.index).trim();
-                if (partBefore !== '') {
-                    parts.push(partBefore);
+            let start = 0;
+            for (let i = 0; i < line.length;) {
+                const skipped = skipNonCode(line, i);
+                if (skipped !== i) { i = skipped; continue; }
+                const ch = line[i];
+                // Bounds inside type parameters/arguments are not inheritance clauses.
+                if (ch === '<') angleDepth++;
+                else if (ch === '>') angleDepth = Math.max(0, angleDepth - 1);
+                else if (';{}'.includes(ch)) angleDepth = 0;
+                if (angleDepth === 0 && (i === 0 || !/[\w$]/.test(line[i - 1]))) {
+                    const clause = /^(extends|implements|throws)\b/.exec(line.slice(i));
+                    if (clause) {
+                        const before = line.slice(start, i).trim();
+                        if (before) output.push(before);
+                        start = i;
+                        i += clause[0].length;
+                        continue;
+                    }
                 }
-                lastIndex = match.index;
+                i++;
             }
-
-            const finalPart = trimmed.slice(lastIndex).trim();
-            if (finalPart !== '') {
-                parts.push(finalPart);
-            }
-
-            for (const part of parts) {
-                output.push(part);
-            }
+            output.push(start === 0 ? line : line.slice(start).trim());
         }
 
         return output;

@@ -35,47 +35,33 @@ class LegacyAccentureJavaFormatter(val config: AccentureFormatterConfig = Accent
 
     private fun applyRule5Clauses(lines: List<String>): List<String> {
         val output = mutableListOf<String>()
-        var inTextBlock = false
+        var angleDepth = 0
+        val clauseRegex = Regex("""^(extends|implements|throws)\b""")
 
         for (line in lines) {
-            if (inTextBlock) {
-                output.add(line)
-                if (line.contains("\"\"\"")) inTextBlock = false
-                continue
+            var start = 0
+            var i = 0
+            while (i < line.length) {
+                val skipped = StructuralFormatting.skipNonCode(line, i)
+                if (skipped != i) { i = skipped; continue }
+                val ch = line[i]
+                // Bounds inside type parameters/arguments are not inheritance clauses.
+                if (ch == '<') angleDepth++
+                else if (ch == '>') angleDepth = maxOf(0, angleDepth - 1)
+                else if (ch in ";{}") angleDepth = 0
+                if (angleDepth == 0 && (i == 0 || !(line[i - 1].isLetterOrDigit() || line[i - 1] in "_$"))) {
+                    val clause = clauseRegex.find(line.substring(i))
+                    if (clause != null) {
+                        val before = line.substring(start, i).trim()
+                        if (before.isNotEmpty()) output.add(before)
+                        start = i
+                        i += clause.value.length
+                        continue
+                    }
+                }
+                i++
             }
-            if (line.contains("\"\"\"")) {
-                val count = Regex("""\"\"\"""").findAll(line).count()
-                if (count % 2 != 0) inTextBlock = true
-            }
-
-            val trimmed = line.trim()
-            if (trimmed.startsWith("//") || trimmed.startsWith("/*") || trimmed.startsWith("*")) {
-                output.add(line)
-                continue
-            }
-
-            val codeWithoutStrings = trimmed.replace(Regex("""("([^"\\]|\\.)*"|'([^'\\]|\\.)*')"""), "\"\"")
-            val clauseRegex = Regex("""\b(extends|implements|throws)\b""")
-            val hasExtends = Regex("""\bextends\b""").containsMatchIn(codeWithoutStrings) && !codeWithoutStrings.startsWith("extends")
-            val hasImplements = Regex("""\bimplements\b""").containsMatchIn(codeWithoutStrings) && !codeWithoutStrings.startsWith("implements")
-            val hasThrows = Regex("""\bthrows\b""").containsMatchIn(codeWithoutStrings) && !codeWithoutStrings.startsWith("throws")
-
-            if (!hasExtends && !hasImplements && !hasThrows) {
-                output.add(line)
-                continue
-            }
-
-            val parts = mutableListOf<String>()
-            var lastIdx = 0
-            for (m in clauseRegex.findAll(trimmed)) {
-                val partBefore = trimmed.substring(lastIdx, m.range.first).trim()
-                if (partBefore.isNotEmpty()) parts.add(partBefore)
-                lastIdx = m.range.first
-            }
-            val finalPart = trimmed.substring(lastIdx).trim()
-            if (finalPart.isNotEmpty()) parts.add(finalPart)
-
-            output.addAll(parts)
+            output.add(if (start == 0) line else line.substring(start).trim())
         }
 
         return output
