@@ -1,7 +1,5 @@
 # A Java Formatter (VS Code & IntelliJ IDEA)
 
-![A Java Formatter Icon](icon.png)
-
 [![JetBrains Marketplace](https://img.shields.io/jetbrains/plugin/v/34525.svg?label=JetBrains%20Marketplace)](https://plugins.jetbrains.com/plugin/34525)
 
 > Enterprise-grade Java Code Formatter for **Visual Studio Code** and **IntelliJ IDEA** (Plugin ID: `34525`), implementing standardized A Java Code Style rules.
