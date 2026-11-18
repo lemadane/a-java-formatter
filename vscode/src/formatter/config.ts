@@ -8,7 +8,7 @@ export interface FormatterConfig {
     continuationIndent?: number;
     insertSpaces: boolean;
     maxLineLength: number;
-    preset: 'Accenture Standard' | 'Google Java Style' | 'Eclipse Default' | 'Spring Framework Style';
+    preset: 'A Standard' | 'Google Java Style' | 'Eclipse Default' | 'Spring Framework Style';
     formatComments: boolean;
     organizeImportsOnFormat: boolean;
     braceStyle: 'sameLine' | 'nextLine';
@@ -26,7 +26,7 @@ export const ACCENTURE_DEFAULT_CONFIG: FormatterConfig = {
     continuationIndent: 2,
     insertSpaces: true,
     maxLineLength: 70,
-    preset: 'Accenture Standard',
+    preset: 'A Standard',
     formatComments: true,
     organizeImportsOnFormat: true,
     braceStyle: 'sameLine',
@@ -37,130 +37,206 @@ export const ACCENTURE_DEFAULT_CONFIG: FormatterConfig = {
     formatOnChange: false
 };
 
-export const PRESET_CONFIGS: Record<string, Partial<FormatterConfig>> = {
-    'Accenture Standard': {
-        tabSize: 4,
-        insertSpaces: true,
-        maxLineLength: 70,
-        braceStyle: 'sameLine',
-        spaceBeforeMethodParenthesis: false,
-        blankLinesBeforeMethod: 1
-    },
-    'Google Java Style': {
-        tabSize: 2,
-        insertSpaces: true,
-        maxLineLength: 70,
-        braceStyle: 'sameLine',
-        spaceBeforeMethodParenthesis: false,
-        blankLinesBeforeMethod: 1
-    },
-    'Eclipse Default': {
-        tabSize: 4,
-        insertSpaces: false,
-        maxLineLength: 70,
-        braceStyle: 'sameLine',
-        spaceBeforeMethodParenthesis: false,
-        blankLinesBeforeMethod: 1
-    },
-    'Spring Framework Style': {
-        tabSize: 4,
-        insertSpaces: true,
-        maxLineLength: 70,
-        braceStyle: 'sameLine',
-        spaceBeforeMethodParenthesis: false,
-        blankLinesBeforeMethod: 1
-    }
-};
+export const PRESET_CONFIGS: Record<string, Partial<FormatterConfig>> =
+  {
+      'A Standard': {
+          tabSize: 4,
+          insertSpaces: true,
+          maxLineLength: 70,
+          braceStyle: 'sameLine',
+          spaceBeforeMethodParenthesis: false,
+          blankLinesBeforeMethod: 1
+      },
+      'Google Java Style': {
+          tabSize: 2,
+          insertSpaces: true,
+          maxLineLength: 70,
+          braceStyle: 'sameLine',
+          spaceBeforeMethodParenthesis: false,
+          blankLinesBeforeMethod: 1
+      },
+      'Eclipse Default': {
+          tabSize: 4,
+          insertSpaces: false,
+          maxLineLength: 70,
+          braceStyle: 'sameLine',
+          spaceBeforeMethodParenthesis: false,
+          blankLinesBeforeMethod: 1
+      },
+      'Spring Framework Style': {
+          tabSize: 4,
+          insertSpaces: true,
+          maxLineLength: 70,
+          braceStyle: 'sameLine',
+          spaceBeforeMethodParenthesis: false,
+          blankLinesBeforeMethod: 1
+      }
+  };
 
-export function getFormatterConfig(document?: vscode.TextDocument): FormatterConfig {
+export function getFormatterConfig(
+  document?: vscode.TextDocument): FormatterConfig {
     let vscodeConfig: any;
     try {
-        if (typeof vscode !== 'undefined' && vscode.workspace) {
-            vscodeConfig = vscode.workspace.getConfiguration('accentureJava.format', document?.uri);
+        if (typeof vscode !== 'undefined'
+          && vscode.workspace) {
+            vscodeConfig = vscode.workspace.getConfiguration(
+              'accentureJava.format',
+              document?.uri);
         }
     } catch (e) {
-        // Fallback for standalone runner environment
+    // Fallback for standalone runner environment
     }
-    
-    const preset = vscodeConfig ? vscodeConfig.get('preset', 'Accenture Standard') : 'Accenture Standard';
-    const basePreset = PRESET_CONFIGS[preset] || PRESET_CONFIGS['Accenture Standard'];
-
+    const preset = vscodeConfig
+      ? vscodeConfig.get(
+        'preset',
+        'A Standard')
+      : 'A Standard';
+    const basePreset =
+      PRESET_CONFIGS[preset] || PRESET_CONFIGS['A Standard'];
     const config: FormatterConfig = {
-        tabSize: vscodeConfig ? vscodeConfig.get('tabSize', basePreset.tabSize ?? 4) : (basePreset.tabSize ?? 4),
-        continuationIndent: vscodeConfig ? vscodeConfig.get('continuationIndent', 2) : 2,
-        insertSpaces: vscodeConfig ? vscodeConfig.get('insertSpaces', basePreset.insertSpaces ?? true) : (basePreset.insertSpaces ?? true),
-        maxLineLength: vscodeConfig ? vscodeConfig.get('maxLineLength', basePreset.maxLineLength ?? 70) : (basePreset.maxLineLength ?? 70),
+        tabSize: vscodeConfig
+          ? vscodeConfig.get(
+            'tabSize',
+            basePreset.tabSize
+              ?? 4)
+          : (basePreset.tabSize
+            ?? 4),
+        continuationIndent: vscodeConfig
+          ? vscodeConfig.get(
+            'continuationIndent',
+            2)
+          : 2,
+        insertSpaces: vscodeConfig
+          ? vscodeConfig.get(
+            'insertSpaces',
+            basePreset.insertSpaces
+              ?? true)
+          : (basePreset.insertSpaces
+            ?? true),
+        maxLineLength: vscodeConfig
+          ? vscodeConfig.get(
+            'maxLineLength',
+            basePreset.maxLineLength
+              ?? 70)
+          : (basePreset.maxLineLength
+            ?? 70),
         preset: preset as FormatterConfig['preset'],
-        formatComments: vscodeConfig ? vscodeConfig.get('comments.enabled', true) : true,
-        organizeImportsOnFormat: vscodeConfig ? vscodeConfig.get('imports.organizeOnFormat', true) : true,
+        formatComments: vscodeConfig
+          ? vscodeConfig.get(
+            'comments.enabled',
+            true)
+          : true,
+        organizeImportsOnFormat: vscodeConfig
+          ? vscodeConfig.get(
+            'imports.organizeOnFormat',
+            true)
+          : true,
         braceStyle: (basePreset.braceStyle as any) || 'sameLine',
-        spaceBeforeMethodParenthesis: basePreset.spaceBeforeMethodParenthesis ?? false,
-        blankLinesBeforeMethod: basePreset.blankLinesBeforeMethod ?? 1,
+        spaceBeforeMethodParenthesis: basePreset.spaceBeforeMethodParenthesis
+          ?? false,
+        blankLinesBeforeMethod: basePreset.blankLinesBeforeMethod
+          ?? 1,
         alignAnnotations: true,
-        xmlSettingsUrl: vscodeConfig ? vscodeConfig.get('settings.url', '') : '',
-        xmlProfileName: vscodeConfig ? vscodeConfig.get('settings.profile', '') : '',
-        onSave: vscodeConfig ? vscodeConfig.get('onSave', false) : false,
-        formatOnChange: vscodeConfig ? vscodeConfig.get('formatOnChange', false) : false
+        xmlSettingsUrl: vscodeConfig
+          ? vscodeConfig.get(
+            'settings.url',
+            '')
+          : '',
+        xmlProfileName: vscodeConfig
+          ? vscodeConfig.get(
+            'settings.profile',
+            '')
+          : '',
+        onSave: vscodeConfig
+          ? vscodeConfig.get(
+            'onSave',
+            false)
+          : false,
+        formatOnChange: vscodeConfig
+          ? vscodeConfig.get(
+            'formatOnChange',
+            false)
+          : false
     };
-
     // If an XML settings file is provided, try loading Eclipse XML overrides
     if (config.xmlSettingsUrl) {
         try {
-            const xmlOverrides = parseEclipseXmlConfig(config.xmlSettingsUrl, config.xmlProfileName, document);
-            Object.assign(config, xmlOverrides);
+            const xmlOverrides = parseEclipseXmlConfig(
+              config.xmlSettingsUrl,
+              config.xmlProfileName,
+              document);
+            Object.assign(
+              config,
+              xmlOverrides);
         } catch (err) {
-            console.warn(`[Accenture Java Formatter] Failed to load XML config from ${config.xmlSettingsUrl}:`, err);
+            console.warn(
+              `[A Java Formatter] Failed to load XML config from ${config.xmlSettingsUrl}:`,
+              err);
         }
     }
-
     return config;
 }
 
 /**
  * Basic XML parser for Eclipse JDT Formatter XML settings profiles
  */
-export function parseEclipseXmlConfig(filePathOrUrl: string, profileName?: string, document?: vscode.TextDocument): Partial<FormatterConfig> {
+export function parseEclipseXmlConfig(
+  filePathOrUrl: string,
+  profileName?: string,
+  document?: vscode.TextDocument): Partial<FormatterConfig> {
     let resolvedPath = filePathOrUrl;
-    if (document && !path.isAbsolute(resolvedPath) && typeof vscode !== 'undefined' && vscode.workspace && vscode.workspace.getWorkspaceFolder(document.uri)) {
-        const rootPath = vscode.workspace.getWorkspaceFolder(document.uri)!.uri.fsPath;
-        resolvedPath = path.resolve(rootPath, filePathOrUrl);
+    if (document
+      && !path.isAbsolute(resolvedPath)
+      && typeof vscode !== 'undefined'
+      && vscode.workspace
+      && vscode.workspace.getWorkspaceFolder(document.uri)) {
+        const rootPath =
+          vscode.workspace.getWorkspaceFolder(document.uri)!.uri.fsPath;
+        resolvedPath = path.resolve(
+          rootPath,
+          filePathOrUrl);
     }
-
     if (!fs.existsSync(resolvedPath)) {
         return {};
     }
-
-    const xmlContent = fs.readFileSync(resolvedPath, 'utf8');
+    const xmlContent = fs.readFileSync(
+      resolvedPath,
+      'utf8');
     const overrides: Partial<FormatterConfig> = {};
-
     // Simple regex-based XML extraction for Eclipse format settings
-    const tabSizeMatch = xmlContent.match(/id="org.eclipse.jdt.core.formatter.tabulation.size"\s+value="(\d+)"/);
+    const tabSizeMatch = xmlContent.match(
+      /id="org.eclipse.jdt.core.formatter.tabulation.size"\s+value="(\d+)"/);
     if (tabSizeMatch) {
-        overrides.tabSize = parseInt(tabSizeMatch[1], 10);
+        overrides.tabSize = parseInt(
+          tabSizeMatch[1],
+          10);
     }
-
-    const tabCharMatch = xmlContent.match(/id="org.eclipse.jdt.core.formatter.tabulation.char"\s+value="([^"]+)"/);
+    const tabCharMatch = xmlContent.match(
+      /id="org.eclipse.jdt.core.formatter.tabulation.char"\s+value="([^"]+)"/);
     if (tabCharMatch) {
         overrides.insertSpaces = tabCharMatch[1] === 'space';
     }
-
-    const lineLengthMatch = xmlContent.match(/id="org.eclipse.jdt.core.formatter.lineSplit"\s+value="(\d+)"/);
+    const lineLengthMatch = xmlContent.match(
+      /id="org.eclipse.jdt.core.formatter.lineSplit"\s+value="(\d+)"/);
     if (lineLengthMatch) {
-        overrides.maxLineLength = parseInt(lineLengthMatch[1], 10);
+        overrides.maxLineLength = parseInt(
+          lineLengthMatch[1],
+          10);
     }
-
-    const braceMatch = xmlContent.match(/id="org.eclipse.jdt.core.formatter.brace_position_for_[^"]+"\s+value="([^"]+)"/);
+    const braceMatch = xmlContent.match(
+      /id="org.eclipse.jdt.core.formatter.brace_position_for_[^"]+"\s+value="([^"]+)"/);
     if (braceMatch) {
-        overrides.braceStyle = braceMatch[1].includes('next_line') ? 'nextLine' : 'sameLine';
+        overrides.braceStyle = braceMatch[1].includes('next_line')
+          ? 'nextLine'
+          : 'sameLine';
     }
-
     return overrides;
 }
 
 export function generateAccentureXmlConfig(): string {
     return `<?xml version="1.0" encoding="UTF-8" standalone="no"?>
 <profiles version="12">
-    <profile kind="CodeFormatterProfile" name="Accenture Standard Java Profile" version="12">
+    <profile kind="CodeFormatterProfile" name="A Standard Java Profile" version="12">
         <setting id="org.eclipse.jdt.core.formatter.tabulation.char" value="space"/>
         <setting id="org.eclipse.jdt.core.formatter.tabulation.size" value="4"/>
         <setting id="org.eclipse.jdt.core.formatter.lineSplit" value="120"/>

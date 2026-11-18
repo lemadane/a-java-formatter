@@ -5,7 +5,7 @@ plugins {
 }
 
 group = "com.accenture"
-version = "0.9.10"
+version = "0.9.11"
 
 repositories {
     mavenCentral()
@@ -36,6 +36,8 @@ kotlin {
 }
 
 intellijPlatform {
+    // This plugin has no settings pages to index.
+    buildSearchableOptions = false
     pluginConfiguration {
         ideaVersion {
             sinceBuild = "233"
@@ -46,7 +48,7 @@ intellijPlatform {
 
 tasks {
     val copyPluginZipToRoot by registering {
-        val archiveName = "accenture-java-formatter-intellij-${project.version}.zip"
+        val archiveName = "a-java-formatter-intellij-${project.version}.zip"
         val archive = layout.buildDirectory.file("distributions/$archiveName")
         val destination = layout.projectDirectory.file(archiveName)
         dependsOn("buildPlugin")

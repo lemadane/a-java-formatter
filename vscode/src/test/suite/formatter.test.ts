@@ -5,10 +5,13 @@ import { organizeJavaImports } from '../../formatter/organizeImports';
 import * as fs from 'fs';
 import * as path from 'path';
 
-describe('Accenture Java Formatter Test Suite', () => {
-
-    it('organizeJavaImports should sort and group Java imports correctly', () => {
-        const inputLines = [
+describe(
+  'A Java Formatter Test Suite',
+  () => {
+      it(
+        'organizeJavaImports should sort and group Java imports correctly',
+        () => {
+            const inputLines = [
             'package com.accenture.demo;',
             '',
             'import com.accenture.service.UserService;',
@@ -19,11 +22,11 @@ describe('Accenture Java Formatter Test Suite', () => {
             'import javax.annotation.PostConstruct;',
             ''
         ];
-
-        const result = organizeJavaImports(inputLines);
-        assert.strictEqual(result.hasImports, true);
-        
-        const expectedImports = [
+            const result = organizeJavaImports(inputLines);
+            assert.strictEqual(
+              result.hasImports,
+              true);
+            const expectedImports = [
             'import static org.junit.Assert.assertEquals;',
             '',
             'import java.util.ArrayList;',
@@ -35,12 +38,14 @@ describe('Accenture Java Formatter Test Suite', () => {
             '',
             'import com.accenture.service.UserService;'
         ].join('\n');
-
-        assert.strictEqual(result.importsText, expectedImports);
-    });
-
-    it('JavaFormatter should format unformatted Java source code cleanly', () => {
-        const messyCode = [
+            assert.strictEqual(
+              result.importsText,
+              expectedImports);
+        });
+      it(
+        'JavaFormatter should format unformatted Java source code cleanly',
+        () => {
+            const messyCode = [
             'package com.accenture.demo;',
             'import java.util.List;',
             'public class EmployeeService{',
@@ -54,20 +59,32 @@ describe('Accenture Java Formatter Test Suite', () => {
             '}',
             '}'
         ].join('\n');
-
-        const formatter = new JavaFormatter({ ...ACCENTURE_DEFAULT_CONFIG, tabSize: 2, continuationIndent: 4 });
-        const formatted = formatter.formatDocument(messyCode);
-
-        assert.ok(formatted.includes('public class EmployeeService {'));
-        assert.ok(formatted.includes('  @Override'));
-        assert.ok(formatted.includes('  public List<String> getEmployees(String deptId) {'));
-        assert.ok(formatted.includes('    if (deptId == null) {'));
-        assert.ok(formatted.includes('      return null;'));
-        assert.ok(formatted.includes('    } else {'));
-    });
-
-    it('JavaFormatter should properly indent Java record components and multiline fields', () => {
-        const recordCode = [
+            const formatter = new JavaFormatter(
+              {
+                  ...ACCENTURE_DEFAULT_CONFIG,
+                  tabSize: 2,
+                  continuationIndent: 4
+              });
+            const formatted = formatter.formatDocument(messyCode);
+            assert.ok(
+              formatted.includes(
+                'public class EmployeeService {'));
+            assert.ok(
+              formatted.includes('  @Override'));
+            assert.ok(
+              formatted.includes(
+                '  public List<String> getEmployees(String deptId) {'));
+            assert.ok(
+              formatted.includes('    if (deptId == null) {'));
+            assert.ok(
+              formatted.includes('      return null;'));
+            assert.ok(
+              formatted.includes('    } else {'));
+        });
+      it(
+        'JavaFormatter should properly indent Java record components and multiline fields',
+        () => {
+            const recordCode = [
             'package cassandra.course.dtos;',
             '',
             'import java.math.BigDecimal;',
@@ -84,28 +101,44 @@ describe('Accenture Java Formatter Test Suite', () => {
             '  }',
             '}'
         ].join('\n');
-
-        const formatter = new JavaFormatter({ ...ACCENTURE_DEFAULT_CONFIG, tabSize: 2, continuationIndent: 4 });
-        const formatted = formatter.formatDocument(recordCode);
-
-        assert.ok(formatted.includes('    String name,'));
-        assert.ok(formatted.includes('    String description,'));
-        assert.ok(formatted.includes('    String category,'));
-        assert.ok(formatted.includes('    BigDecimal price,'));
-        assert.ok(formatted.includes('    long version) {'));
-        assert.ok(formatted.includes('  public long nextVersion() {'));
-        assert.ok(formatted.includes('    return version + 2;'));
-    });
-
-    it('generateAccentureXmlConfig should output valid Eclipse profile XML', () => {
-        const xml = generateAccentureXmlConfig();
-        assert.ok(xml.includes('<profiles version="12">'));
-        assert.ok(xml.includes('Accenture Standard Java Profile'));
-        assert.ok(xml.includes('org.eclipse.jdt.core.formatter.lineSplit'));
-    });
-
-    it('JavaFormatter should properly indent multiline arguments inside .map and .orElseGet method calls', () => {
-        const code = [
+            const formatter = new JavaFormatter(
+              {
+                  ...ACCENTURE_DEFAULT_CONFIG,
+                  tabSize: 2,
+                  continuationIndent: 4
+              });
+            const formatted = formatter.formatDocument(recordCode);
+            assert.ok(
+              formatted.includes('    String name,'));
+            assert.ok(
+              formatted.includes('    String description,'));
+            assert.ok(
+              formatted.includes('    String category,'));
+            assert.ok(
+              formatted.includes('    BigDecimal price,'));
+            assert.ok(
+              formatted.includes('    long version) {'));
+            assert.ok(
+              formatted.includes('  public long nextVersion() {'));
+            assert.ok(
+              formatted.includes('    return version + 2;'));
+        });
+      it(
+        'generateAccentureXmlConfig should output valid Eclipse profile XML',
+        () => {
+            const xml = generateAccentureXmlConfig();
+            assert.ok(
+              xml.includes('<profiles version="12">'));
+            assert.ok(
+              xml.includes('A Standard Java Profile'));
+            assert.ok(
+              xml.includes(
+                'org.eclipse.jdt.core.formatter.lineSplit'));
+        });
+      it(
+        'JavaFormatter should properly indent multiline arguments inside .map and .orElseGet method calls',
+        () => {
+            const code = [
             'package com.accenture.test;',
             'public class ProductService {',
             '  public Object getProduct(final UUID id) {',
@@ -118,21 +151,30 @@ describe('Accenture Java Formatter Test Suite', () => {
             '  }',
             '}'
         ].join('\n');
-
-        const formatter = new JavaFormatter({ ...ACCENTURE_DEFAULT_CONFIG, tabSize: 2, continuationIndent: 4 });
-        const formatted = formatter.formatDocument(code);
-
-        assert.ok(formatted.includes('        .map('));
-        assert.ok(formatted.includes('        .map(ResponseEntity::ok)'));
-        assert.ok(formatted.includes('        .orElseGet('));
-        assert.ok(formatted.includes('        () -> ResponseEntity.notFound()'));
-        assert.ok(formatted.includes('            .build());'));
-
-
-    });
-
-    it('JavaFormatter should normalize missing assignment spaces and excessive parenthesis spaces', () => {
-        const messyCode = [
+            const formatter = new JavaFormatter(
+              {
+                  ...ACCENTURE_DEFAULT_CONFIG,
+                  tabSize: 2,
+                  continuationIndent: 4
+              });
+            const formatted = formatter.formatDocument(code);
+            assert.ok(
+              formatted.includes('        .map('));
+            assert.ok(
+              formatted.includes(
+                '        .map(ResponseEntity::ok)'));
+            assert.ok(
+              formatted.includes('        .orElseGet('));
+            assert.ok(
+              formatted.includes(
+                '        () -> ResponseEntity.notFound()'));
+            assert.ok(
+              formatted.includes('            .build());'));
+        });
+      it(
+        'JavaFormatter should normalize missing assignment spaces and excessive parenthesis spaces',
+        () => {
+            const messyCode = [
             'package com.accenture.controller;',
             'public class ProductController {',
             '  public Object create() {',
@@ -142,30 +184,47 @@ describe('Accenture Java Formatter Test Suite', () => {
             '  }',
             '}'
         ].join('\n');
-
-        const formatter = new JavaFormatter({ ...ACCENTURE_DEFAULT_CONFIG, tabSize: 2, continuationIndent: 4 });
-        const formatted = formatter.formatDocument(messyCode);
-
-        assert.ok(formatted.includes('    final var product = this.productService.create(request);'));
-        assert.ok(formatted.includes('    final var location = URI.create(\n        "/api/products/" + product.id());'));
-    });
-
-    it('parseEclipseXmlConfig should extract indentation and line length settings', () => {
-        const tempXmlPath = path.join(__dirname, 'test-formatter.xml');
-        fs.writeFileSync(tempXmlPath, generateAccentureXmlConfig(), 'utf8');
-
-        try {
-            const config = parseEclipseXmlConfig(tempXmlPath);
-            assert.strictEqual(config.tabSize, 4);
-            assert.strictEqual(config.insertSpaces, true);
-            assert.strictEqual(config.maxLineLength, 120);
-        } finally {
-            if (fs.existsSync(tempXmlPath)) {
-                fs.unlinkSync(tempXmlPath);
+            const formatter = new JavaFormatter(
+              {
+                  ...ACCENTURE_DEFAULT_CONFIG,
+                  tabSize: 2,
+                  continuationIndent: 4
+              });
+            const formatted = formatter.formatDocument(messyCode);
+            assert.ok(
+              formatted.includes(
+                '    final var product = this.productService.create(request);'));
+            assert.ok(
+              formatted.includes(
+                '    final var location = URI.create(\n        "/api/products/" + product.id());'));
+        });
+      it(
+        'parseEclipseXmlConfig should extract indentation and line length settings',
+        () => {
+            const tempXmlPath = path.join(
+              __dirname,
+              'test-formatter.xml');
+            fs.writeFileSync(
+              tempXmlPath,
+              generateAccentureXmlConfig(),
+              'utf8');
+            try {
+                const config = parseEclipseXmlConfig(tempXmlPath);
+                assert.strictEqual(
+                  config.tabSize,
+                  4);
+                assert.strictEqual(
+                  config.insertSpaces,
+                  true);
+                assert.strictEqual(
+                  config.maxLineLength,
+                  120);
+            } finally {
+                if (fs.existsSync(tempXmlPath)) {
+                    fs.unlinkSync(tempXmlPath);
+                }
             }
-        }
-    });
-
-});
+        });
+  });
 
 

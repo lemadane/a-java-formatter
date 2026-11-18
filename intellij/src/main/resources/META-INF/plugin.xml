@@ -1,10 +1,10 @@
 <idea-plugin>
     <id>com.accenture.java.formatter</id>
-    <name>Accenture Java Formatter</name>
+    <name>A Java Formatter</name>
     <vendor email="support@accenture.com" url="https://accenture.com">LemuelAdane</vendor>
 
     <description><![CDATA[
-    Enterprise-grade Java code formatting plugin for IntelliJ IDEA, implementing Accenture Java code style rules.
+    Enterprise-grade Java code formatting plugin for IntelliJ IDEA, implementing A Java code style rules.
     <br/>
     <b>Features:</b>
     <ul>

@@ -1,0 +1,7 @@
+**
+!package.json
+!LICENSE
+!icon.png
+!out/extension.js
+!out/formatter/**/*.js
+!out/providers/**/*.js

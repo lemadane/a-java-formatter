@@ -244,7 +244,7 @@ class AccentureJavaFormatterTest {
             package com.accenture.test;
             public class Config {
                 public void setup() {
-                    String shortName = "Accenture";
+                    String shortName = "A";
                 }
             }
         """.trimIndent()
